@@ -1,0 +1,32 @@
+- name: Launch ec2 instance and provision it
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+    - vars/aws-credentials.yml
+    - vars/aws-environment.yml
+  tasks:
+  - name: launch ec2 instance
+    ec2:
+      region: "{{ item.region }}"
+      ec2_access_key: "{{ ec2_access_key }}"
+      ec2_secret_key: "{{ ec2_secret_key }}"
+      keypair: "{{ item.keypair }}"
+      instance_type: "{{ item.instance_type }}"
+      image: "{{ item.image }}"
+      instance_tags: "{{ item.instance_tags}}"
+# Enforce that specific number of instances with a specific tag is running
+      exact_tag: "{{ item.exact_tag }}"
+      count_tag: "{{ item.count_tag }}"
+# wait for the instance to reach its desired state before returning
+      wait: true
+      vpc_subnet_id: "{{ item.vpc_subnet_id }}"
+#ec2-vpc instance doesn't recieve a public ip address by default
+#it receives a static private ip address(doesn't change) from the address range of your vpc
+#an elastic IP remains associated with your instance when you stop it
+      assign_public_ip: yes
+      
+# monitoring using CloudWatch
+      monitoring: yes
+    register: ec2
+    with_items: ec2_instances

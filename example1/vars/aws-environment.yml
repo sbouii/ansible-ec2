@@ -1,0 +1,42 @@
+ec2_region: us-east-1
+instances_keypair: keypair-name 
+image_id: ami-bf5021d6
+
+# security groups: act as a virtual firewall that allow traffic to or from instances, it's used for both linux and windows instances
+# rules of security groups:
+#By default aws allow all outbound traffic
+#You can't change the outbound rules for an EC2-Classic security group
+#Security group rules are always permissive; you can't create rules that deny access.
+#You can add and remove rules at any time. Your changes are automatically applied to the instances associated with the security group after a short period. 
+#a security group can be created and copied
+# you must specify security group in the same region as the linked EC2 instance 
+security_groups:
+ - name: ssh
+   desc: the security group for the jumphost
+   rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+ - name: web
+   desc: the security group for the web server 
+   rules:
+      - proto: tcp
+        from_port: "80"
+        to_port: "80"
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: "443"
+        to_port: "443"
+# the ip address form which the traffic is comming , it must contain the subnet also 
+        cidr_ip: 0.0.0.0/0
+
+ec2_instances:
+
+  - instance_type: m1.small
+    image: "{{ image_id }}"
+    keypair: "{{instances_keypair}}"
+    group: ['web', 'ssh'] 
+    instance_tags: 
+        Name: web
+    count: 1   
